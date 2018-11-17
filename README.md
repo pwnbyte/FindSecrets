@@ -1,7 +1,9 @@
 # FindSecrets
 FindSecrets try to search AWSkeys, apikeys in Javascript files from a input domain.
 
+###### Python3 required
+
 ```
-usage: ruby findSecrets.rb -u https://domain.com
+usage: python3 findSecrets.py -u https://domain.com
 
 ```

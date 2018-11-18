@@ -5,7 +5,7 @@ FindSecrets try to search AWSkeys, apikeys in Javascript files from a input doma
 
 ```
 
-git clone 
+git clone https://github.com/ghostnil/FindSecrets.git
 
 cd FindSecrets
 

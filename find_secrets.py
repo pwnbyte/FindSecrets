@@ -34,6 +34,23 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KH
 
 
 
+
+def banner():
+
+    p = ''' 
+    {}:{}
+#######                  #####                                           
+#       # #    # #####  #     # ######  ####  #####  ###### #####  ####  
+#       # ##   # #    # #       #      #    # #    # #        #   #      
+#####   # # #  # #    #  #####  #####  #      #    # #####    #    ####  
+#       # #  # # #    #       # #      #      #####  #        #        # 
+#       # #   ## #    # #     # #      #    # #   #  #        #   #    # 
+#       # #    # #####   #####  ######  ####  #    # ######   #    ####  
+     '''
+    return p.format(__AUTHOR__, __VERSION__)
+
+
+
 def send_requests(url):
     try:
         r = requests.get(url, headers=HEADERS, timeout=5)
@@ -85,4 +102,5 @@ def crawler_js(requests_objt, url):
     
 
 if __name__ == "__main__":
+    print(banner())
     send_requests(url)

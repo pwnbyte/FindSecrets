@@ -6,6 +6,8 @@ import argparse
 import os
 import sys
 import re
+import datetime, time
+import shutil
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 import colors
@@ -14,6 +16,8 @@ __AUTHOR__ = 'Gh0sTNiL'
 __VERSION__ = 'v01.BETA'
 
 global agent
+global dirname
+dirname = ''
 agent = ''
 
 
@@ -27,6 +31,11 @@ REGEX_PATTERN = {"Api": "[A-Za-z0-9\._+]*\/api\/[A-Za-z0-9\._+]*",
 "Authorization": "Authorization",
  "appToken": "appToken",
  "appKey":"appKey"}
+
+
+
+
+
 
 
 
@@ -61,6 +70,27 @@ web_user_agent = args.random_agent_web
 mobile_user_agent = args.random_agent_mobile
 console_user_agent = args.random_agent_console
 
+
+
+# create a dir with name of target name
+dirname = urlparse(url).netloc
+dt = datetime.datetime(2011, 10, 21, 0, 0)
+seconds = time.mktime(dt.timetuple())
+try:
+    os.mkdir(dirname)
+    print(colors.Color.OKBLUE + "[*] Created a DIR with name {}".format(dirname))
+    print(colors.Color.END)
+except FileExistsError as e:
+    print(colors.Color.FAIL + "[-] File Exists Would u like to overwrite {} y/n".format(dirname))
+    print(colors.Color.END)
+    c = input()
+    if len(c) == 1 and c.lower() == 'y':
+        shutil.rmtree(dirname)
+        os.mkdir(dirname)
+    else:
+        print(colors.Color.FAIL + "[*] Delete manually and try again ;)")
+        print(colors.Color.END)
+        sys.exit()
 
 
 if 'http://' not in url and 'https://' not in url:
@@ -109,6 +139,7 @@ def send_requests(url):
         if r.status_code != 404:
             print(colors.Color.OKGREEN + "[*] Crawler start!")
             print(colors.Color.END)
+
             crawler_js(r.text, url)
     except requests.exceptions.Timeout as e:
         print("[+] Timeout Error for {}".format(e))
@@ -125,7 +156,8 @@ def send_requests(url):
 def parser_js_endpoints(src_tag, url):
     # return a domain from URL passed
     domain_path = urlparse(src_tag)
-    # print(domain_path.netloc)
+    
+
     if domain_path.netloc == '':
         return url + src_tag
     elif domain_path.netloc != url:
@@ -136,12 +168,39 @@ def parser_js_endpoints(src_tag, url):
     else:
         return url + src_tag    
     
+
+
+def save_jsEnpoint_file(js_endpoint):
+
+    parsed_endpoint_name_https = js_endpoint.replace('https://', '_')
+    parsed_endpoint_name_slash = parsed_endpoint_name_https.replace('/','_')
+    fullpath = os.path.join(dirname, parsed_endpoint_name_slash+".txt")
+
+
+    try:
+        r = requests.get(js_endpoint, headers=HEADERS, timeout=5)
+        if r.status_code != 404:
+            with open(fullpath, 'wb') as f:
+                f.write(r.content)
+            f.close()
+
+    except requests.exceptions.Timeout as e:
+        print("[+] Timeout Error for {}".format(e))
+        pass
+    except requests.exceptions.MissingSchema as e:
+        print("[+] Missing Schema https:// or http:// for {}".format(url))
+        pass
+    except requests.exceptions.TooManyRedirects as e:
+        print("[+] Too many redirects found for {}".format(url))
+        pass
+
     
 
 
 
+
 def crawler_js(requests_objt, url):
-    # pattern = re.compile(r'src=(.*)"')
+    
     soup = BeautifulSoup(requests_objt, 'html.parser')
     src_tags_list = []
 
@@ -162,7 +221,10 @@ def crawler_js(requests_objt, url):
     for endpoint_js in filter_src_tag_list:
         parsed_endpoint = parser_js_endpoints(endpoint_js, url)
         print(parsed_endpoint)
+        save_jsEnpoint_file(parsed_endpoint)
+
     print(colors.Color.OKGREEN + "[*] Crawler end, total scripts founded! {}".format(len(filter_src_tag_list)))
+    print(colors.Color.OKGREEN + "[*] All scripts were saved on dir called {} !".format(dirname))
     print(colors.Color.END)       
     
 

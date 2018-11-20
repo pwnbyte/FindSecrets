@@ -1,39 +1,38 @@
 #!/usr/bin/python3
 
+
 import requests
 import random
 import argparse
 import os
 import sys
-import re
+import re, fnmatch
+import glob
 import datetime, time
 import shutil
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 import colors
 
+
 __AUTHOR__ = 'Gh0sTNiL'
 __VERSION__ = 'v01.BETA'
 
+
+## GLOBAL VARS
 global agent
 global dirname
 dirname = ''
 agent = ''
 
-
-
-
-
-REGEX_PATTERN = {"Api": "[A-Za-z0-9\._+]*\/api\/[A-Za-z0-9\._+]*", 
-"AmazonEndPoint": '(http|https):\/\/[A-Za-z0-9\._+].*amazonaws.(com)', 
+## REGEX PATTERN
+REGEX_PATTERN = {"Api": '[A-Za-z0-9\._+]*\/api\/[A-Za-z0-9\._+]*', 
+"AmazonEndPoint": 'https:\/\/[A-Za-z0-9\-.*]*.amazonaws.com', 
 "AcessKeyAws": "ACCESS_KEY_ID", 
 "SecretKeyAws": "SECRET_KEY",
 "Authorization": "Authorization",
  "appToken": "appToken",
  "appKey":"appKey"}
-
-
-
 
 
 
@@ -135,7 +134,7 @@ def send_requests(url):
 
 
     try:
-        r = requests.get(url, headers=HEADERS, timeout=5)
+        r = requests.get(url, headers=HEADERS, timeout=5, allow_redirects=True)
         if r.status_code != 404:
             print(colors.Color.OKGREEN + "[*] Crawler start!")
             print(colors.Color.END)
@@ -150,6 +149,8 @@ def send_requests(url):
     except requests.exceptions.TooManyRedirects as e:
         print("[+] Too many redirects found for {}".format(url))
         pass
+    except requests.exceptions.RetryError as e:
+        print("[+] Redirect Error for {}".format(url))
     
 
 
@@ -174,7 +175,8 @@ def save_jsEnpoint_file(js_endpoint):
 
     parsed_endpoint_name_https = js_endpoint.replace('https://', '_')
     parsed_endpoint_name_slash = parsed_endpoint_name_https.replace('/','_')
-    fullpath = os.path.join(dirname, parsed_endpoint_name_slash+".txt")
+    parsed_endpoint_name_txt = parsed_endpoint_name_slash.replace('.js', '.txt')
+    fullpath = os.path.join(dirname, parsed_endpoint_name_txt)
 
 
     try:
@@ -195,6 +197,20 @@ def save_jsEnpoint_file(js_endpoint):
         pass
 
     
+def grab_patterns_from_js(regex_pattern_hash):
+    #api = re.findall(regex_pattern_hash['Api'], text)
+    #amazonaws = re.findall(regex_pattern_hash['AmazonEndPoint'], text)
+
+    for filepath in glob.glob(os.path.join(dirname, '*.txt')):
+        with open(filepath) as f:
+            content = f.read()
+            api = re.findall(regex_pattern_hash['Api'], content)
+            amazonaws = re.findall(regex_pattern_hash['AmazonEndPoint'], content)
+
+            if api:
+                print(api)
+            if amazonaws:
+                print(amazonaws)
 
 
 
@@ -230,8 +246,8 @@ def crawler_js(requests_objt, url):
 
 if __name__ == "__main__":
     print(colors.Color.WARNING +banner() + colors.Color.END)
-
     send_requests(url)
+    grab_patterns_from_js(REGEX_PATTERN)
 
 
 

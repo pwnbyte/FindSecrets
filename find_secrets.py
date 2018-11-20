@@ -80,7 +80,7 @@ try:
     print(colors.Color.OKBLUE + "[*] Created a DIR with name {}".format(dirname))
     print(colors.Color.END)
 except FileExistsError as e:
-    print(colors.Color.FAIL + "[-] File Exists Would u like to overwrite {} y/n".format(dirname))
+    print(colors.Color.FAIL + "[-] File Exists {} Would u like to overwrite {} y/n".format(dirname,dirname))
     print(colors.Color.END)
     c = input()
     if len(c) == 1 and c.lower() == 'y':

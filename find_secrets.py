@@ -176,6 +176,11 @@ def save_jsEnpoint_file(js_endpoint):
     parsed_endpoint_name_https = js_endpoint.replace('https://', '_')
     parsed_endpoint_name_slash = parsed_endpoint_name_https.replace('/','_')
     parsed_endpoint_name_txt = parsed_endpoint_name_slash.replace('.js', '.txt')
+
+    ## parse URL when the length is higher than 150 to save with the name
+    if len(parsed_endpoint_name_txt) > 150:
+        parsed_endpoint_name_txt = parsed_endpoint_name_txt.split('?')[0]
+
     fullpath = os.path.join(dirname, parsed_endpoint_name_txt)
 
 
@@ -202,15 +207,28 @@ def grab_patterns_from_js(regex_pattern_hash):
     #amazonaws = re.findall(regex_pattern_hash['AmazonEndPoint'], text)
 
     for filepath in glob.glob(os.path.join(dirname, '*.txt')):
-        with open(filepath) as f:
+        with open(filepath, errors='ignore') as f:
             content = f.read()
             api = re.findall(regex_pattern_hash['Api'], content)
             amazonaws = re.findall(regex_pattern_hash['AmazonEndPoint'], content)
+            AcessKeyAws = re.findall(regex_pattern_hash['AcessKeyAws'], content)
+            SecretKeyAws = re.findall(regex_pattern_hash['SecretKeyAws'], content)
+            Authorization = re.findall(regex_pattern_hash['Authorization'], content)
+
+
 
             if api:
                 print(api)
             if amazonaws:
                 print(amazonaws)
+            if AcessKeyAws:
+                print(colors.Color.OKGREEN + "[*] Possible access key found")
+            if SecretKeyAws:
+                print(colors.Color.OKGREEN + "[*] Possible secret key found on")
+            if Authorization:
+                print(colors.Color.OKGREEN + "[*] Possible authorization key found on")
+
+            
 
 
 
@@ -248,23 +266,3 @@ if __name__ == "__main__":
     print(colors.Color.WARNING +banner() + colors.Color.END)
     send_requests(url)
     grab_patterns_from_js(REGEX_PATTERN)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

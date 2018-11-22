@@ -1,5 +1,11 @@
 # FindSecrets
-FindSecrets try to search AWSkeys, apikeys in Javascript files from a input domain.
+*This tool was made for crawler a domain, get all possible .js files, and try to find all sensetive information or missconfiguration like*
+* api endpoints
+* aws URLs
+* api keys
+* authorizations bearers and tokens
+* and others patters just put and commit
+
 
 ###### Python3 required
 
@@ -14,3 +20,6 @@ pip3 install --user -r requirements.txt
 usage: python3 findSecrets.py -u https://domain.com
 
 ```
+
+
+** ISSUES ARE WELCOME **

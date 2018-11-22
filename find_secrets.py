@@ -73,8 +73,8 @@ console_user_agent = args.random_agent_console
 
 # create a dir with name of target name
 dirname = urlparse(url).netloc
-dt = datetime.datetime(2011, 10, 21, 0, 0)
-seconds = time.mktime(dt.timetuple())
+
+
 try:
     os.mkdir(dirname)
     print(colors.Color.OKBLUE + "[*] Created a DIR with name {}".format(dirname))

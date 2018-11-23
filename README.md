@@ -1,5 +1,5 @@
 # FindSecrets
-*This tool was made for crawler a domain, get all possible .js files, and try to find all sensetive information or missconfiguration like*
+*This tool was made for crawler a domain, get all possible .js files, and try to find all sensitive information or missconfiguration like*
 * api endpoints
 * aws URLs
 * api keys

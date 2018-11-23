@@ -36,8 +36,6 @@ REGEX_PATTERN = {"Api": '[A-Za-z0-9\._+]*\/api\/[A-Za-z0-9\._+]*',
 
 
 
-
-
 def random_mobile_agent():
     lines = open('utils/mobile_agent.txt').read().splitlines()
     line = random.choice(lines)
@@ -55,58 +53,6 @@ def random_game_agent():
     line = random.choice(lines)
     return line
 
-
-
-## MENU
-parser = argparse.ArgumentParser(description='Tool to find secrets on input domain')
-parser.add_argument('-u', '--url', type=str, required=True, help="[+] URL for crawler")
-parser.add_argument('--random_agent_web',help="Random user agents web", action='store_true')
-parser.add_argument('--random_agent_mobile', help="Random user agents mobile", action='store_true')
-parser.add_argument('--random_agent_console', help="Random user agents console", action='store_true')
-args = parser.parse_args()
-url = args.url
-web_user_agent = args.random_agent_web
-mobile_user_agent = args.random_agent_mobile
-console_user_agent = args.random_agent_console
-
-
-
-# create a dir with name of target name
-dirname = urlparse(url).netloc
-
-
-try:
-    os.mkdir(dirname)
-    print(colors.Color.OKBLUE + "[*] Created a DIR with name {}".format(dirname))
-    print(colors.Color.END)
-except FileExistsError as e:
-    print(colors.Color.FAIL + "[-] File Exists {} Would u like to overwrite {} y/n".format(dirname,dirname))
-    print(colors.Color.END)
-    c = input()
-    if len(c) == 1 and c.lower() == 'y':
-        shutil.rmtree(dirname)
-        os.mkdir(dirname)
-    else:
-        print(colors.Color.FAIL + "[*] Delete manually and try again ;)")
-        print(colors.Color.END)
-        sys.exit()
-
-
-if 'http://' not in url and 'https://' not in url:
-    print("[-] Provide a schema http:// or https:// for {}".format(url))
-    sys.exit()
-
-if console_user_agent:
-    agent = random_game_agent()
-if mobile_user_agent:
-    agent = random_mobile_agent()
-if web_user_agent:
-    agent = random_web_agent()
-
-if agent == '':
-        agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:56.0) Gecko/20100101 Firefox/56.0'
-
-HEADERS = {"User-Agent": agent}
 
 
 
@@ -129,7 +75,7 @@ def banner():
 def send_requests(url):
 
 
-    print(colors.Color.OKBLUE + "[+] Random Agent set: {}\n".format(agent))
+    print(colors.Color.OKBLUE + "\n\n[+] Random Agent set: {}\n".format(agent))
     print(colors.Color.END)
 
 
@@ -138,8 +84,9 @@ def send_requests(url):
         if r.status_code != 404:
             print(colors.Color.OKGREEN + "[*] Crawler start!")
             print(colors.Color.END)
-
             crawler_js(r.text, url)
+
+            
     except requests.exceptions.Timeout as e:
         print("[+] Timeout Error for {}".format(e))
         pass
@@ -230,9 +177,6 @@ def grab_patterns_from_js(regex_pattern_hash):
 
             
 
-
-
-
 def crawler_js(requests_objt, url):
     
     soup = BeautifulSoup(requests_objt, 'html.parser')
@@ -262,7 +206,64 @@ def crawler_js(requests_objt, url):
     print(colors.Color.END)       
     
 
+
+
+
+
+HEADERS = {"User-Agent": agent}
+
+
 if __name__ == "__main__":
+
+    ## MENU
+    parser = argparse.ArgumentParser(description='Tool to find secrets on input domain')
+    parser.add_argument('-u', '--url', type=str, required=True, help="[+] URL for crawler")
+    parser.add_argument('--random_agent_web',help="Random user agents web", action='store_true')
+    parser.add_argument('--random_agent_mobile', help="Random user agents mobile", action='store_true')
+    parser.add_argument('--random_agent_console', help="Random user agents console", action='store_true')
+    args = parser.parse_args()
+    url = args.url
+    web_user_agent = args.random_agent_web
+    mobile_user_agent = args.random_agent_mobile
+    console_user_agent = args.random_agent_console
+
+
+
+    # create a dir with name of target name
+    dirname = urlparse(url).netloc
+
+
+    try:
+        os.mkdir(dirname)
+        print(colors.Color.OKBLUE + "[*] Created a DIR with name {}".format(dirname))
+        print(colors.Color.END)
+    except FileExistsError as e:
+        print(colors.Color.FAIL + "[-] File Exists {} Would u like to overwrite {} y/n".format(dirname,dirname))
+        print(colors.Color.END)
+        c = input()
+        if len(c) == 1 and c.lower() == 'y':
+            shutil.rmtree(dirname)
+            os.mkdir(dirname)
+        else:
+            print(colors.Color.FAIL + "[*] Delete manually and try again ;)")
+            print(colors.Color.END)
+            sys.exit()
+
+
+    if 'http://' not in url and 'https://' not in url:
+        print("[-] Provide a schema http:// or https:// for {}".format(url))
+        sys.exit()
+
+    if console_user_agent:
+        agent = random_game_agent()
+    if mobile_user_agent:
+        agent = random_mobile_agent()
+    if web_user_agent:
+        agent = random_web_agent()
+
+    if agent == '':
+            agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:56.0) Gecko/20100101 Firefox/56.0'
+
     print(colors.Color.WARNING +banner() + colors.Color.END)
     send_requests(url)
     grab_patterns_from_js(REGEX_PATTERN)

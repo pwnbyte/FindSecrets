@@ -24,6 +24,8 @@ global agent
 global dirname
 dirname = ''
 agent = ''
+HEADERS = {"User-Agent": agent}
+
 
 ## REGEX PATTERN
 REGEX_PATTERN = {"Api": '[A-Za-z0-9\._+]*\/api\/[A-Za-z0-9\._+]*', 
@@ -86,7 +88,7 @@ def send_requests(url):
             print(colors.Color.END)
             crawler_js(r.text, url)
 
-            
+
     except requests.exceptions.Timeout as e:
         print("[+] Timeout Error for {}".format(e))
         pass
@@ -156,24 +158,32 @@ def grab_patterns_from_js(regex_pattern_hash):
     for filepath in glob.glob(os.path.join(dirname, '*.txt')):
         with open(filepath, errors='ignore') as f:
             content = f.read()
+
+
+            # regex grabber
             api = re.findall(regex_pattern_hash['Api'], content)
             amazonaws = re.findall(regex_pattern_hash['AmazonEndPoint'], content)
             AcessKeyAws = re.findall(regex_pattern_hash['AcessKeyAws'], content)
             SecretKeyAws = re.findall(regex_pattern_hash['SecretKeyAws'], content)
             Authorization = re.findall(regex_pattern_hash['Authorization'], content)
 
-
+            
 
             if api:
-                print(api)
+                print(colors.Color.OKGREEN + f"[*]Found API end points on " + colors.Color.FAIL + f"{filepath}" + colors.Color.END + f"\n\n {api} \n\n")
+                print(colors.Color.END)
             if amazonaws:
-                print(amazonaws)
+                print(colors.Color.OKGREEN + f"[*]Found AWS end points on " + colors.Color.FAIL + f"{filepath}" + colors.Color.END + f"\n\n {amazonaws} \n\n")
+                print(colors.Color.END)
             if AcessKeyAws:
-                print(colors.Color.OKGREEN + "[*] Possible access key found")
+                print(colors.Color.OKGREEN + f"[*]Found AcessKeyAws end points on " + colors.Color.FAIL + f"{filepath}" + colors.Color.END + f"\n\n {AcessKeyAws} \n\n")
+                print(colors.Color.END)
             if SecretKeyAws:
                 print(colors.Color.OKGREEN + "[*] Possible secret key found on")
+                print(colors.Color.END)
             if Authorization:
                 print(colors.Color.OKGREEN + "[*] Possible authorization key found on")
+                print(colors.Color.END)
 
             
 
@@ -201,7 +211,7 @@ def crawler_js(requests_objt, url):
         print(parsed_endpoint)
         save_jsEnpoint_file(parsed_endpoint)
 
-    print(colors.Color.OKGREEN + "[*] Crawler end, total scripts founded! {}".format(len(filter_src_tag_list)))
+    print(colors.Color.OKGREEN + "\n\n[*] Crawler end, total scripts founded! {}".format(len(filter_src_tag_list)))
     print(colors.Color.OKGREEN + "[*] All scripts were saved on dir called {} !".format(dirname))
     print(colors.Color.END)       
     
@@ -210,7 +220,6 @@ def crawler_js(requests_objt, url):
 
 
 
-HEADERS = {"User-Agent": agent}
 
 
 if __name__ == "__main__":

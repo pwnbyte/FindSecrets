@@ -28,13 +28,15 @@ HEADERS = {"User-Agent": agent}
 
 
 ## REGEX PATTERN
-REGEX_PATTERN = {"Api": '[A-Za-z0-9\._+]*\/api\/[A-Za-z0-9\._+]*', 
-"AmazonEndPoint": 'https:\/\/[A-Za-z0-9\-.*]*.amazonaws.com', 
-"AcessKeyAws": "ACCESS_KEY_ID", 
+REGEX_PATTERN = {"Api": '/api\/[A-Za-z0-9\._+]*',
+"AmazonEndPoint": 'https:\/\/[A-Za-z0-9\-.*]*.amazonaws.com',
+"AcessKeyAws": "ACCESS_KEY_ID",
 "SecretKeyAws": "SECRET_KEY",
-"Authorization": "Authorization",
+"Authorization": "Authorization:\s[A-Za-z0-9]*\s[A-Za-z0-9]",
  "appToken": "appToken",
- "appKey":"appKey"}
+ "apiWithSlash": '/api\/[A-Aa-z0-9]*\/[A-Aa-z0-9]*',
+ "apiWithDot": '/api.[A-Za-z0-9\._+]*\/[A-Za-z0-9\._+]*\/[A-Za-z0-9\._+]*',
+ "appKey":'appkey(\S[A-Za-z0-9]*)'}
 
 
 
@@ -60,15 +62,15 @@ def random_game_agent():
 
 def banner():
 
-    p = ''' 
+    p = '''
     {}:{}
-#######                  #####                                           
-#       # #    # #####  #     # ######  ####  #####  ###### #####  ####  
-#       # ##   # #    # #       #      #    # #    # #        #   #      
-#####   # # #  # #    #  #####  #####  #      #    # #####    #    ####  
-#       # #  # # #    #       # #      #      #####  #        #        # 
-#       # #   ## #    # #     # #      #    # #   #  #        #   #    # 
-#       # #    # #####   #####  ######  ####  #    # ######   #    ####  
+#######                  #####
+#       # #    # #####  #     # ######  ####  #####  ###### #####  ####
+#       # ##   # #    # #       #      #    # #    # #        #   #
+#####   # # #  # #    #  #####  #####  #      #    # #####    #    ####
+#       # #  # # #    #       # #      #      #####  #        #        #
+#       # #   ## #    # #     # #      #    # #   #  #        #   #    #
+#       # #    # #####   #####  ######  ####  #    # ######   #    ####
      '''
     return p.format(__AUTHOR__, __VERSION__)
 
@@ -82,7 +84,7 @@ def send_requests(url):
 
 
     try:
-        r = requests.get(url, headers=HEADERS, timeout=5, allow_redirects=True)
+        r = requests.get(url, headers=HEADERS, timeout=10, allow_redirects=True)
         if r.status_code != 404:
             print(colors.Color.OKGREEN + "[*] Crawler start!")
             print(colors.Color.END)
@@ -100,24 +102,26 @@ def send_requests(url):
         pass
     except requests.exceptions.RetryError as e:
         print("[+] Redirect Error for {}".format(url))
-    
+
 
 
 def parser_js_endpoints(src_tag, url):
     # return a domain from URL passed
     domain_path = urlparse(src_tag)
-    
+
 
     if domain_path.netloc == '':
         return url + src_tag
+
+    # if domain is different from the original domain
     elif domain_path.netloc != url:
         if src_tag[:2] == '//':
             new_src_tag = src_tag.replace('//', 'https://')
             return new_src_tag
         return src_tag
     else:
-        return url + src_tag    
-    
+        return url + src_tag
+
 
 
 def save_jsEnpoint_file(js_endpoint):
@@ -134,7 +138,7 @@ def save_jsEnpoint_file(js_endpoint):
 
 
     try:
-        r = requests.get(js_endpoint, headers=HEADERS, timeout=5)
+        r = requests.get(js_endpoint, headers=HEADERS, timeout=10, allow_redirects=True)
         if r.status_code != 404:
             with open(fullpath, 'wb') as f:
                 f.write(r.content)
@@ -150,7 +154,7 @@ def save_jsEnpoint_file(js_endpoint):
         print("[+] Too many redirects found for {}".format(url))
         pass
 
-    
+
 def grab_patterns_from_js(regex_pattern_hash):
     #api = re.findall(regex_pattern_hash['Api'], text)
     #amazonaws = re.findall(regex_pattern_hash['AmazonEndPoint'], text)
@@ -158,16 +162,16 @@ def grab_patterns_from_js(regex_pattern_hash):
     for filepath in glob.glob(os.path.join(dirname, '*.txt')):
         with open(filepath, errors='ignore') as f:
             content = f.read()
-
-
             # regex grabber
             api = re.findall(regex_pattern_hash['Api'], content)
             amazonaws = re.findall(regex_pattern_hash['AmazonEndPoint'], content)
             AcessKeyAws = re.findall(regex_pattern_hash['AcessKeyAws'], content)
             SecretKeyAws = re.findall(regex_pattern_hash['SecretKeyAws'], content)
             Authorization = re.findall(regex_pattern_hash['Authorization'], content)
+            apiWithSlash = re.findall(regex_pattern_hash['apiWithSlash'], content)
+            apiWithDot = re.findall(regex_pattern_hash['apiWithDot'], content)
+            appKey = re.findall(regex_pattern_hash['appKey'], content)
 
-            
 
             if api:
                 print(colors.Color.OKGREEN + f"[*]Found API end points on " + colors.Color.FAIL + f"{filepath}" + colors.Color.END + f"\n\n {api} \n\n")
@@ -184,11 +188,21 @@ def grab_patterns_from_js(regex_pattern_hash):
             if Authorization:
                 print(colors.Color.OKGREEN + "[*] Possible authorization key found on")
                 print(colors.Color.END)
+            if apiWithSlash:
+                print(colors.Color.OKGREEN + f"[*]Found apiWithSlash end points on " + colors.Color.FAIL + f"{filepath}" + colors.Color.END + f"\n\n {apiWithSlash} \n\n")
+                print(colors.Color.END)
+            if apiWithDot:
+                print(colors.Color.OKGREEN + f"[*]Found apiWithDot end points on " + colors.Color.FAIL + f"{filepath}" + colors.Color.END + f"\n\n {apiWithDot} \n\n")
+                print(colors.Color.END)
+            if appKey:
+                print(colors.Color.OKGREEN + f"[*]Found appKey end points on " + colors.Color.FAIL + f"{filepath}" + colors.Color.END + f"\n\n {[m for m in appKey]} \n\n")
+                print(colors.Color.END)
 
-            
+
+
 
 def crawler_js(requests_objt, url):
-    
+
     soup = BeautifulSoup(requests_objt, 'html.parser')
     src_tags_list = []
 
@@ -199,10 +213,10 @@ def crawler_js(requests_objt, url):
     for script_tag in soup.find_all('script'):
         if script_tag:
             src_tags_list.append(script_tag.get('src'))
-    
-    # Remove None elements from 
+
+    # Remove None elements from list scripts
     filter_src_tag_list = [ src_js for src_js in src_tags_list if src_js is not None]
-    
+
     # Concat js with domain crawled
     print(colors.Color.OKGREEN + "[*] Scripts were founded")
     print(colors.Color.END)
@@ -213,8 +227,8 @@ def crawler_js(requests_objt, url):
 
     print(colors.Color.OKGREEN + "\n\n[*] Crawler end, total scripts founded! {}".format(len(filter_src_tag_list)))
     print(colors.Color.OKGREEN + "[*] All scripts were saved on dir called {} !".format(dirname))
-    print(colors.Color.END)       
-    
+    print(colors.Color.END)
+
 
 
 
@@ -223,9 +237,8 @@ def crawler_js(requests_objt, url):
 
 
 if __name__ == "__main__":
-
-    ## MENU
-    parser = argparse.ArgumentParser(description='Tool to find secrets on input domain')
+    print(banner())
+    parser = argparse.ArgumentParser(description='Tool to find secrets on input domai')
     parser.add_argument('-u', '--url', type=str, required=True, help="[+] URL for crawler")
     parser.add_argument('--random_agent_web',help="Random user agents web", action='store_true')
     parser.add_argument('--random_agent_mobile', help="Random user agents mobile", action='store_true')
@@ -273,6 +286,5 @@ if __name__ == "__main__":
     if agent == '':
             agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:56.0) Gecko/20100101 Firefox/56.0'
 
-    print(colors.Color.WARNING +banner() + colors.Color.END)
     send_requests(url)
     grab_patterns_from_js(REGEX_PATTERN)

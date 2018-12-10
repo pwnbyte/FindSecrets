@@ -30,6 +30,7 @@ HEADERS = {"User-Agent": agent}
 ## REGEX PATTERN
 REGEX_PATTERN = {"Api": '/api\/[A-Za-z0-9\._+]*',
 "AmazonEndPoint": 'https:\/\/[A-Za-z0-9\-.*]*.amazonaws.com',
+"AmazonEndPointHTTP": 'http:\/\/[A-Za-z0-9\-.*]*.amazonaws.com'
 "AcessKeyAws": "ACCESS_KEY_ID",
 "SecretKeyAws": "SECRET_KEY",
 "Authorization": "Authorization:\s[A-Za-z0-9]*\s[A-Za-z0-9]",
@@ -165,6 +166,7 @@ def grab_patterns_from_js(regex_pattern_hash):
             # regex grabber
             api = re.findall(regex_pattern_hash['Api'], content)
             amazonaws = re.findall(regex_pattern_hash['AmazonEndPoint'], content)
+            amazonawshttp = re.findall(regex_pattern_hash['AmazonEndPointHTTP'], content)
             AcessKeyAws = re.findall(regex_pattern_hash['AcessKeyAws'], content)
             SecretKeyAws = re.findall(regex_pattern_hash['SecretKeyAws'], content)
             Authorization = re.findall(regex_pattern_hash['Authorization'], content)
@@ -178,6 +180,9 @@ def grab_patterns_from_js(regex_pattern_hash):
                 print(colors.Color.END)
             if amazonaws:
                 print(colors.Color.OKGREEN + f"[*]Found AWS end points on " + colors.Color.FAIL + f"{filepath}" + colors.Color.END + f"\n\n {amazonaws} \n\n")
+                print(colors.Color.END)
+            if amazonawshttp:
+                print(colors.Color.OKGREEN + f"[*]Found AWS end points on " + colors.Color.FAIL + f"{filepath}" + colors.Color.END + f"\n\n {amazonawshttp} \n\n")
                 print(colors.Color.END)
             if AcessKeyAws:
                 print(colors.Color.OKGREEN + f"[*]Found AcessKeyAws end points on " + colors.Color.FAIL + f"{filepath}" + colors.Color.END + f"\n\n {AcessKeyAws} \n\n")

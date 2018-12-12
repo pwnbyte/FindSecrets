@@ -27,14 +27,17 @@ agent = ''
 HEADERS = {"User-Agent": agent}
 
 
-## REGEX PATTERN
+## REGEX PATTERNS
 REGEX_PATTERN = {"Api": '/api\/[A-Za-z0-9\._+]*',
-"AmazonEndPoint": 'https:\/\/[A-Za-z0-9\-.*]*.amazonaws.com',
-"AmazonEndPointHTTP": 'http:\/\/[A-Za-z0-9\-.*]*.amazonaws.com'
+"AmazonEndPoint": 'https:\/\/[A-Za-z0-9\-.*]*.amazonaws.com/[A-Za-z0-9\-.*]*',
+"AmazonEndPointHTTP": 'http:\/\/[A-Za-z0-9\-.*]*.amazonaws.com/[A-Za-z0-9\-.*]*',
 "AcessKeyAws": "ACCESS_KEY_ID",
-"SecretKeyAws": "SECRET_KEY",
+"accessKeyId": 'accessKeyId:([A-Za-z1-9]{0,30})',
+"secretAccessKey": 'secretAccessKey:([A-Za-z1-9]{0,50})',
+"SecretKeyAws": 'SECRET_KEY:([A-Za-z1-9]{0,50})',
+"Graphql": '([A-Za-z0-9\._+])/graphql/([A-Za-z0-9\._+])',
 "Authorization": "Authorization:\s[A-Za-z0-9]*\s[A-Za-z0-9]",
- "appToken": "appToken",
+ "appToken": "appToken:\s([A-Za-z1-9]{0,50}",
  "apiWithSlash": '/api\/[A-Aa-z0-9]*\/[A-Aa-z0-9]*',
  "apiWithDot": '/api.[A-Za-z0-9\._+]*\/[A-Za-z0-9\._+]*\/[A-Za-z0-9\._+]*',
  "appKey":'appkey(\S[A-Za-z0-9]*)'}
@@ -173,6 +176,11 @@ def grab_patterns_from_js(regex_pattern_hash):
             apiWithSlash = re.findall(regex_pattern_hash['apiWithSlash'], content)
             apiWithDot = re.findall(regex_pattern_hash['apiWithDot'], content)
             appKey = re.findall(regex_pattern_hash['appKey'], content)
+            Graphql = re.findall(regex_pattern_hash['Graphql'], content)
+            secretAccessKey = re.findall(regex_pattern_hash['secretAccessKey'], content)
+            accessKeyId = re.findall(regex_pattern_hash['accessKeyId'], content)
+
+
 
 
             if api:
@@ -201,6 +209,15 @@ def grab_patterns_from_js(regex_pattern_hash):
                 print(colors.Color.END)
             if appKey:
                 print(colors.Color.OKGREEN + f"[*]Found appKey end points on " + colors.Color.FAIL + f"{filepath}" + colors.Color.END + f"\n\n {[m for m in appKey]} \n\n")
+                print(colors.Color.END)
+            if Graphql:
+                print(colors.Color.OKGREEN + f"[*]Found Graphql end points on " + colors.Color.FAIL + f"{filepath}" + colors.Color.END + f"\n\n {m for m in Graphql} \n\n")
+                print(colors.Color.END)
+            if secretAccessKey:
+                print(colors.Color.OKGREEN + f"[*]Found secretAccessKey end points on " + colors.Color.FAIL + f"{filepath}" + colors.Color.END + f"\n\n {secretAccessKey} \n\n")
+                print(colors.Color.END)
+            if accessKeyId:
+                print(colors.Color.OKGREEN + f"[*]Found accessKeyId end points on " + colors.Color.FAIL + f"{filepath}" + colors.Color.END + f"\n\n {accessKeyId} \n\n")
                 print(colors.Color.END)
 
 

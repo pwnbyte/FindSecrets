@@ -68,13 +68,28 @@ def banner():
 
     p = '''
     {}:{}
-#######                  #####
-#       # #    # #####  #     # ######  ####  #####  ###### #####  ####
-#       # ##   # #    # #       #      #    # #    # #        #   #
-#####   # # #  # #    #  #####  #####  #      #    # #####    #    ####
-#       # #  # # #    #       # #      #      #####  #        #        #
-#       # #   ## #    # #     # #      #    # #   #  #        #   #    #
-#       # #    # #####   #####  ######  ####  #    # ######   #    ####
+
+███████╗██╗███╗   ██╗██████╗ ███████╗███████╗ ██████╗██████╗ ███████╗████████╗███████╗
+██╔════╝██║████╗  ██║██╔══██╗██╔════╝██╔════╝██╔════╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝
+█████╗  ██║██╔██╗ ██║██║  ██║███████╗█████╗  ██║     ██████╔╝█████╗     ██║   ███████╗
+██╔══╝  ██║██║╚██╗██║██║  ██║╚════██║██╔══╝  ██║     ██╔══██╗██╔══╝     ██║   ╚════██║
+██║     ██║██║ ╚████║██████╔╝███████║███████╗╚██████╗██║  ██║███████╗   ██║   ███████║
+╚═╝     ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝
+
+
+usage: find_secrets.py [-h] -u URL [--random_agent_web]
+                       [--random_agent_mobile] [--random_agent_console]
+
+Tool to find secrets on input domain
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -u URL, --url URL     [+] URL for crawler ex: https://domain.com
+  --random_agent_web    Random user agents web
+  --random_agent_mobile
+                        Random user agents mobile
+  --random_agent_console
+                        Random user agents console
      '''
     return p.format(__AUTHOR__, __VERSION__)
 
@@ -254,12 +269,7 @@ def crawler_js(requests_objt, url):
 
 
 
-
-
-
-
 if __name__ == "__main__":
-    print(banner())
     parser = argparse.ArgumentParser(description='Tool to find secrets on input domai')
     parser.add_argument('-u', '--url', type=str, required=True, help="[+] URL for crawler")
     parser.add_argument('--random_agent_web',help="Random user agents web", action='store_true')
@@ -271,12 +281,13 @@ if __name__ == "__main__":
     mobile_user_agent = args.random_agent_mobile
     console_user_agent = args.random_agent_console
 
+    if 'http://' not in url and 'https://' not in url:
+        print("[-] Provide a schema http:// or https:// for {}".format(url))
+        sys.exit()
 
-
+    print(banner())
     # create a dir with name of target name
     dirname = urlparse(url).netloc
-
-
     try:
         os.mkdir(dirname)
         print(colors.Color.OKBLUE + "[*] Created a DIR with name {}".format(dirname))
@@ -293,10 +304,6 @@ if __name__ == "__main__":
             print(colors.Color.END)
             sys.exit()
 
-
-    if 'http://' not in url and 'https://' not in url:
-        print("[-] Provide a schema http:// or https:// for {}".format(url))
-        sys.exit()
 
     if console_user_agent:
         agent = random_game_agent()

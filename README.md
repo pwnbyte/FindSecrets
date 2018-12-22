@@ -11,6 +11,8 @@
 
 ```
 
+sudo apt-get install python3-setuptools
+
 git clone https://github.com/ghostnil/FindSecrets.git
 
 cd FindSecrets
@@ -20,6 +22,9 @@ pip3 install --user -r requirements.txt
 usage: python3 findSecrets.py -u https://domain.com
 
 ```
+
+![](https://github.com/ghostnil/FindSecrets/blob/master/find_secrets_v01.gif)
+
 
 
 ** ISSUES ARE WELCOME **

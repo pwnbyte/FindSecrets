@@ -10,15 +10,10 @@ args = parser.parse_args()
 
 
 url = args.url
-
 ks = KeySniffer(args.url)
-
 ks.verify_url()
 
-## get only javascript from <script src=*
-results_only_js = ks.scrapper()
-ks.grabber(results_only_js)
 
-## get javascript from <link href=*
-results_link_tag = ks.scrapper_tag_link_src()
-ks.grabber(results_link_tag)
+## get only javascript from <script src=* and return array of urls
+results_js = ks.scrapper() 
+ks.grabber(results_js)

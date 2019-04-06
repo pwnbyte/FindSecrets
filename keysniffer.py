@@ -39,9 +39,27 @@ class KeySniffer:
             print("[-] U dont pass a scheme.. all requests will be made with https://")
             self.url = "https://" + self.url
             print(self.url)
+  
+
+    def parse_urls(self, array_urls):
+        new_parsed_array = []
+        new_url = ""
+        for u in array_urls:
+            if u[0:2] == "//":
+                new_url = u.replace("//", "https://", 1)
+                new_parsed_array.append(new_url)
+                #print("BUGGY --> //: ", new_url)
+            elif u[0:4] == "http":
+                new_parsed_array.append(u)
+            else:
+                new_url = self.url + u
+                new_parsed_array.append(new_url)
+                #print("BUGGY --> /: ", new_url)
+        
+        return new_parsed_array
 
 
-    
+    ## get all src="*.js" from a domain
     def scrapper(self):
         array_urrls = []
         try:
@@ -53,15 +71,16 @@ class KeySniffer:
         except (Exception,requests.exceptions.Timeout) as e:
             print(e)
 
+
         bs_objt = BeautifulSoup(text,features="lxml")
         for js in bs_objt.findAll("script",{"src":re.compile("/|//|http|https")}):
-            if js["src"][0:1] == "/":
-                array_urrls.append(self.url + js["src"])
-            elif js["src"][0:2] == "//":
-                array_urrls.append(self.url + js["src"])
-            else:
-                array_urrls.append(js["src"])
-            
+            array_urrls.append(js["src"])
+        
+
+        bs_objt_link = BeautifulSoup(text, features="lxml")
+        for link in bs_objt_link.findAll("link",{"href":re.compile(".js")}):
+            array_urrls.append(link["href"])
+
         if len(array_urrls) <= 0:
             print(bcolors.RED + "[-] No javascripts found")
         else:
@@ -71,39 +90,8 @@ class KeySniffer:
         return set(array_urrls)
 
     
-    ## when the site uses frameworks like nextjs js are set on link tags
-    def scrapper_tag_link_src(self):
-        urls = set()
-        
-        try:
-            r = requests.get(self.url,headers=headers,timeout=3.0)
-            text = r.text
-            print(bcolors.RED + "[*] Starting search for <link tags>...")
-            print(bcolors.VIOLET + "[+] status code: for {} --> [{}]".format(self.url,r.status_code))
-            print("\n\n")
-        except (Exception,requests.exceptions.Timeout) as e:
-            print(e)
-        
-        bs_objt = BeautifulSoup(text,'html.parser')
-        for link in bs_objt.findAll("link"):
-            if "href" in link.attrs:
-                if ".js" in link.attrs:
-                    print("DEBBUGER", link.attrs['js'])
-                    urls.add(self.url+link.attrs["href"])
-        
-        if len(urls) <= 0:
-            print(bcolors.WARD + "[-] No Link tags were found")
-            print("\n\n")
-        else:
-            print(bcolors.RED + "[*] Link tags were found total: {}".format(len(urls)))
-            print("\n\n")
-
-        return urls
-
-
-
-
-    def grabber(self, urls):
+   
+    def grabber(self, array_urls):
         count = 0
 
         ## REGEX PATTERNS
@@ -120,9 +108,13 @@ class KeySniffer:
         "apiWithSlash": '/api\/[A-Aa-z0-9]*\/[A-Aa-z0-9]*',
         "apiWithDot": '/api.[A-Za-z0-9\._+]*\/[A-Za-z0-9\._+]*\/[A-Za-z0-9\._+]*',
         "appKey":'appkey(\S[A-Za-z0-9]*)'}
+        
+        # parsing urls from a domain
+        parsed_array_urls = self.parse_urls(array_urls)
 
         try:
-            for url in urls:
+            for url in parsed_array_urls:
+                #print("[*] Try to fetch: {} \n".format(url))
                 try:
                     r = requests.get(url,headers=headers,timeout=5.0)
                 except (Exception,requests.exceptions.Timeout) as e:
@@ -144,56 +136,56 @@ class KeySniffer:
                 accessKeyId = re.findall(REGEX_PATTERN['accessKeyId'], r.text)
 
                 if api:
-                    print("[*] Found API endpoints on URL:[{}] \n\n --> {}".format(url,parser_regex(api)))
+                    print(" [*] Found API endpoints on URL:[{}] \n\n --> {}".format(url,parser_regex(api)))
                     print("\n\n")
                     count += 1
                     
                 if amazonaws:
-                    print("[*]Found AWS endpoints on URL:[{}] \n\n --> {}".format(url,parser_regex(amazonaws)))
+                    print(" [*]Found AWS endpoints on URL:[{}] \n\n --> {}".format(url,parser_regex(amazonaws)))
                     print("\n\n")
                     count += 1
                     
                 if amazonawshttp:
-                    print("[*]Found AWS endpoints on URL:[{}] \n\n --> {}".format(url,parser_regex(amazonawshttp)))
+                    print(" [*]Found AWS endpoints on URL:[{}] \n\n --> {}".format(url,parser_regex(amazonawshttp)))
                     print("\n\n")
                     count += 1
                     
                 if AcessKeyAws:
-                    print("[*]Found AcessKeyAws endpoints on URL:[{}] \n\n --> {}".format(url,parser_regex(AcessKeyAws)))
+                    print(" [*]Found AcessKeyAws endpoints on URL:[{}] \n\n --> {}".format(url,parser_regex(AcessKeyAws)))
                     print("\n\n")
                     count += 1
                     
                 if SecretKeyAws:
-                    print("[*] Possible secret key found on URL:[{}] \n\n --> {}".format(url,parser_regex(SecretKeyAws)))
+                    print(" [*] Possible secret key found on URL:[{}] \n\n --> {}".format(url,parser_regex(SecretKeyAws)))
                     print("\n\n")
                     count += 1
                     
                 if Authorization:
-                    print("[*] Possible authorization key found on URL:[{}]\n\n --> {}".format(url,parser_regex(Authorization)))
+                    print(" [*] Possible authorization key found on URL:[{}]\n\n --> {}".format(url,parser_regex(Authorization)))
                     print("\n\n")
                     count += 1
 
                 if apiWithSlash:
-                    print("[*]Found apiWithSlash endpoints on URL:[{}] \n\n --> {}".format(url,parser_regex(apiWithSlash)))
+                    print(" [*]Found apiWithSlash endpoints on URL:[{}] \n\n --> {}".format(url,parser_regex(apiWithSlash)))
                     print("\n\n")
                     count += 1
                 if apiWithDot:
-                    print("[*]Found apiWithDot endpoints on URL:[{}] \n\n --> {}".format(url,parser_regex(apiWithDot)))
+                    print(" [*]Found apiWithDot endpoints on URL:[{}] \n\n --> {}".format(url,parser_regex(apiWithDot)))
                     print("\n\n")
                     count += 1
                     
                 if appKey:
-                    print("[*]Found appKey endpoints on URL:[{}] \n\n --> {}".format(url,parser_regex(appKey)))
+                    print(" [*]Found appKey endpoints on URL:[{}] \n\n --> {}".format(url,parser_regex(appKey)))
                     print("\n\n")
                     count += 1
 
                 if Graphql:
-                    print("[*]Found Graphql endpoints on URL:[{}] \n\n --> {}".format(url,parser_regex(Graphql)))
+                    print(" [*]Found Graphql endpoints on URL:[{}] \n\n --> {}".format(url,parser_regex(Graphql)))
                     print("\n\n")
                     count += 1
                     
                 if secretAccessKey:
-                    print("[*]Found secretAccessKey endpoints on URL:[{}]  \n\n --> {}".format(url,parser_regex(secretAccessKey)))
+                    print(" [*]Found secretAccessKey endpoints on URL:[{}]  \n\n --> {}".format(url,parser_regex(secretAccessKey)))
                     print("\n\n")
                     count += 1
                     
@@ -204,9 +196,3 @@ class KeySniffer:
                     
         except Exception as e:
             print(e)
-
-
-
-    
-        
-
